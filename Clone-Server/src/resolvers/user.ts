@@ -11,10 +11,11 @@ import {
   Resolver,
 } from "type-graphql";
 import { User } from "../../src/entities/User";
+import {EntityManager} from "@mikro-orm/postgresql"
 
 
 @InputType()
-class UsernamePassowrdInput {
+class UsernamePasswordInput {
   @Field()
   username: string;
   @Field()
@@ -57,7 +58,7 @@ export class UserResolver {
 
   @Mutation(() => UserResponse)
   async register(
-    @Arg("options") options: UsernamePassowrdInput,
+    @Arg("options") options: UsernamePasswordInput,
     @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
     if (options.username.length <= 2) {
@@ -83,15 +84,26 @@ export class UserResolver {
     }
 
     const hashedPassword = await argon2.hash(options.password);
-    const user = em.create(User, {
-      username: options.username,
-      password: hashedPassword,
-    });
+    let user;
+    // const user = em.create(User, {
+    //   username: options.username,
+    //   password: hashedPassword,
+    // });
     try {
-      await em.persistAndFlush(user);
+     const result = await (em as EntityManager)
+     .createQueryBuilder(User)
+     .getKnexQuery()
+     .insert({
+          username: options.username,
+          password: hashedPassword,
+          created_at: new Date(),
+          updated_at: new Date(),
+        })
+        .returning("*");
+        user = result[0];
     } catch (err) {
       // duplicate username error
-      if (err.code === "23505" || err.detail.includes("already exists")) {
+      if (err.detail.includes("already exists")) {
         return {
           errors: [
             {
@@ -103,6 +115,7 @@ export class UserResolver {
       }
     }
 
+    console.log("i am user: ", user)
     // user login after register
     // store user id session, setting cookie on user keeping them logged in.
     req.session.userId = user.id;
@@ -112,7 +125,7 @@ export class UserResolver {
 
   @Mutation(() => UserResponse)
   async login(
-    @Arg("options") options: UsernamePassowrdInput,
+    @Arg("options") options: UsernamePasswordInput,
     @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
     const user = await em.findOne(User, { username: options.username });
