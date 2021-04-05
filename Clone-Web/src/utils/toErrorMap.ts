@@ -1,4 +1,3 @@
-import { stringifyVariables } from "@urql/core";
 import { FieldError } from "../generated/graphql";
 
 export const toErrorMap =(errors: FieldError[]) => {
