@@ -1,8 +1,9 @@
-query Post {
-    posts {
-        id
+query Post($id: Int!) {
+    post(id: $id) {
         createdAt
         updatedAt
         title
+        points
+        text
     }
 }

@@ -1,10 +1,7 @@
-import {
-  Box,
-  Button
-} from "@chakra-ui/react";
+import { Flex, Link } from "@chakra-ui/core";
+import { Box, Button } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
 import { withUrqlClient } from "next-urql";
-
 import { useRouter } from "next/router";
 import React from "react";
 import { InputField } from "../components/inputField";
@@ -12,8 +9,7 @@ import { Wrapper } from "../components/wrapper";
 import { useLoginMutation } from "../generated/graphql";
 import { createUrqlClient } from "../utils/createUrqlClient";
 import { toErrorMap } from "../utils/toErrorMap";
-
-
+import NextLink from "next/link";
 
 interface loginProps {}
 
@@ -26,13 +22,15 @@ export const Login: React.FC<{}> = ({}) => {
         initialValues={{ usernameOrEmail: "", password: "" }}
         onSubmit={async (values, { setErrors }) => {
           const response = await login(values);
-          console.log(response)
+          console.log(response);
           if (response.data?.login.errors) {
             setErrors(toErrorMap(response.data.login.errors));
           } else if (response.data?.login.user) {
-            // login worked
-            console.log("here")
-            router.push("/")
+            if (typeof router.query.next === "string") {
+              router.push(router.query.next);
+            } else {
+              router.push("/");
+            }
           }
         }}
       >
@@ -51,6 +49,11 @@ export const Login: React.FC<{}> = ({}) => {
                 type="password"
               />
             </Box>
+            <Flex mt={2}>
+                <NextLink href="/forgot-password">
+                  <Link ml='auto'> click here for new password</Link>
+                </NextLink>
+            </Flex>
             <Button
               mt={4}
               type="submit"
@@ -66,4 +69,4 @@ export const Login: React.FC<{}> = ({}) => {
   );
 };
 
-export default withUrqlClient(createUrqlClient) (Login);
+export default withUrqlClient(createUrqlClient)(Login);

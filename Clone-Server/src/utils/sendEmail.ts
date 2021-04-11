@@ -1,12 +1,12 @@
 import nodemailer from "nodemailer";
 
 export async function sendEmail(to: string, html: string) {
-
     // let testAccount = await nodemailer.createTestAccount();
     // console.log('testAccount', testAccount)
 
+    // create reusable transporter object using the default SMTP transport
     let transporter = nodemailer.createTransport({
-        host: "",
+        host: "smtp.ethereal.email",
         port:  555,
         secure: false,
         auth: {
@@ -15,18 +15,14 @@ export async function sendEmail(to: string, html: string) {
         },
     });
 
-
-
-
+    //send mail with defined transport object
     let info = await transporter.sendMail({
-        from: "ph",
-        to: to,
-        subject: "Change Password",
+        from: '"Yo Mama " <foo@example.com>', //sender address
+        to: to, // list of receivers
+        subject: "Change Password", // Subject line
         html, 
-        
     });
 
     console.log("Message sent: ", info.messageId);
-
     console.log("preview URL:", nodemailer.getTestMessageUrl(info));
 }
