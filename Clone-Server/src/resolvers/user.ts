@@ -1,22 +1,24 @@
-import { MyContext } from "src/types";
 import argon2 from "argon2";
 import {
   Arg,
   Ctx,
   Field,
+  FieldResolver,
   Mutation,
   ObjectType,
   Query,
   Resolver,
+  Root
 } from "type-graphql";
-import { User } from "../../src/entities/User";
-// import { EntityManager } from "@mikro-orm/postgresql";
-import { COOKIE_NAME, FORGET_PASSWORD_PREFIX } from "../constants";
-import { UsernamePasswordInput } from "./UsernamePasswordInput";
-import { validateRegister } from "../utils/validateRegister";
-import { sendEmail } from "../utils/sendEmail";
-import { v4 } from "uuid";
 import { getConnection } from "typeorm";
+import { v4 } from "uuid";
+import { COOKIE_NAME, FORGET_PASSWORD_PREFIX } from "../constants";
+import { User } from "../entities/User";
+import { MyContext } from "../types";
+import { sendEmail } from "../utils/sendEmail";
+import { validateRegister } from "../utils/validateRegister";
+import { UsernamePasswordInput } from "./UsernamePasswordInput";
+
 
 @ObjectType()
 class FieldError {
@@ -35,8 +37,18 @@ class UserResponse {
   user?: User;
 }
 
-@Resolver()
+@Resolver(User)
 export class UserResolver {
+  @FieldResolver(() => String)
+  email(@Root() user: User, @Ctx() { req }: MyContext){
+    //this is the current user and its ok to show them their own email
+    if (req.session.userId === user.id) {
+      return user.email;
+    }
+    // current user wants to see someone elses email 
+    return "";
+  }
+
 
 
   @Mutation(() => UserResponse)
@@ -148,7 +160,7 @@ export class UserResolver {
     const hashedPassword = await argon2.hash(options.password);
     let user;
     try {
-      //User.create({}).save()
+      // User.create({}).save()
       const result = await getConnection()
         .createQueryBuilder()
         .insert()
@@ -186,8 +198,8 @@ export class UserResolver {
 
   @Mutation(() => UserResponse)
   async login(
-    @Arg("usernameOrEmail") usernameOrEmail: string,
-    @Arg("password") password: string,
+    @Arg("usernameOrEmail", () => String ) usernameOrEmail: string,
+    @Arg("password", () => String) password: string,
     @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
     const user = await User.findOne(
@@ -228,13 +240,13 @@ export class UserResolver {
   logout(@Ctx() { req, res }: MyContext) {
     return new Promise((resolve) =>
       req.session.destroy((err) => {
+        res.clearCookie(COOKIE_NAME);
         if (err) {
           console.log(err);
           resolve(false);
         }
-        res.clearCookie(COOKIE_NAME);
         resolve(true);
       })
     );
   }
-}
+};

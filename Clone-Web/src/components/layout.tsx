@@ -1,6 +1,6 @@
 import React from "react";
-import { Navbar } from "./navbar";
-import { Wrapper, WrapperVariant } from "./wrapper";
+import { Navbar } from "./Navbar";
+import { Wrapper, WrapperVariant } from "./Wrapper";
 
 
 

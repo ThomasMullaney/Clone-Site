@@ -1,5 +1,4 @@
-import { CSSReset, ThemeProvider } from "@chakra-ui/react";
-import React from "react";
+import { CSSReset, ThemeProvider } from "@chakra-ui/core";
 import theme from "../theme";
 
 

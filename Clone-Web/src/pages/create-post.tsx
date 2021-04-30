@@ -1,15 +1,19 @@
-import { Box, Button } from "@chakra-ui/react";
+import { Box, Button } from "@chakra-ui/core";
 import { Formik, Form } from "formik";
-import React from "react";
-import { InputField } from "../components/inputField";
+import React, { useEffect } from "react";
+import { InputField } from "../components/InputField";
 import { useRouter } from 'next/router';
-import { useCreatePostMutation } from "../generated/graphql";
+import { useCreatePostMutation, useMeQuery } from "../generated/graphql";
+import { Layout } from "../components/Layout";
+import { useIsAuth } from "../utils/useIsAuth";
+import { withApollo } from "../utils/withApollo";
 import { withUrqlClient } from "next-urql";
 import { createUrqlClient } from "../utils/createUrqlClient";
-import { Layout } from "../components/layout";
-import { useIsAuth } from "../utils/useIsAuth";
 
 
+
+
+//<------------------------------------------------------------------------------------------------------
  const CreatePost: React.FC<{}> = ({}) => {
   const router = useRouter();
   useIsAuth();
@@ -19,10 +23,22 @@ import { useIsAuth } from "../utils/useIsAuth";
     <Formik
       initialValues={{title: "", text: "" }}
       onSubmit={async (values) => {
-        const {error} = await createPost({input: values});
+        
+        const { error } = await createPost({input: values});
         if (!error) {
           router.push("/")
         }
+      
+        // const { errors } = await createPost({
+        //   variables: {
+        //   input: values},
+        //   update: (cache) => {
+        //     cache.evict({ fieldName: "posts: {}"});
+        //   },
+        // });
+        // if (!errors) {
+        //   router.push("/")
+        // }
       }}
     >
       {({ isSubmitting }) => (
@@ -45,7 +61,7 @@ import { useIsAuth } from "../utils/useIsAuth";
             mt={4}
             type="submit"
             isLoading={isSubmitting}
-            variantcolor="teal"
+            variantColor="teal"
           >
             Create Post
           </Button>

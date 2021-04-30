@@ -1,15 +1,19 @@
-import { Box, Button } from "@chakra-ui/react";
-import { Formik, Form } from "formik";
+import { Box, Button } from "@chakra-ui/core";
+import { Form, Formik } from "formik";
 import { withUrqlClient } from "next-urql";
-// import router from "next/router";
 import React, { useState } from "react";
-import { InputField } from "../components/inputField";
-import { Wrapper } from "../components/wrapper";
+import { InputField } from "../components/InputField";
+import { Wrapper } from "../components/Wrapper";
 import { useForgotPasswordMutation } from "../generated/graphql";
 import { createUrqlClient } from "../utils/createUrqlClient";
-// import { toErrorMap } from "../utils/toErrorMap";
-// import login from "./login";
+import { withApollo } from "../utils/withApollo";
 
+
+
+
+
+ 
+/// <-------------------------------------------------------------------------------------------------------------
 const ForgotPassword: React.FC<[]> = ({}) => {
   const [complete, setComplete] = useState(false);
   const [, forgotPassword] = useForgotPasswordMutation();
@@ -18,16 +22,14 @@ const ForgotPassword: React.FC<[]> = ({}) => {
       <Formik
         initialValues={{ email: "" }}
         onSubmit={async (values) => {
-          await forgotPassword(values);
+          await forgotPassword( values );
           setComplete(true);
-
-    
         }}
       >
         {({ isSubmitting }) =>
           complete ? (
             <Box>
-              if an account with that email exists, we sent you an email{" "}
+              if an account with that email exists, we sent you an email
             </Box>
           ) : (
             <Form>
@@ -43,7 +45,7 @@ const ForgotPassword: React.FC<[]> = ({}) => {
                 mt={4}
                 type="submit"
                 isLoading={isSubmitting}
-                variantcolor="teal"
+                variantColor="teal"
               >
                 Forgot Password
               </Button>
