@@ -7,9 +7,11 @@ COPY package-lock.json ./
 
 RUN npm install
 
-RUN npm build
 
 COPY . . 
+COPY .env.production .env
+
+RUN npm build
 
 EXPOSE 8080
 CMD [ "node", "dist/index.js"]

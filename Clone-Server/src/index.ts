@@ -6,6 +6,7 @@ import session from "express-session";
 import Redis from "ioredis";
 import path from "path";
 import "reflect-metadata";
+import "dotenv-safe/config";
 import { buildSchema } from "type-graphql";
 import { createConnection } from "typeorm";
 import { COOKIE_NAME, __prod__ } from "./constants";
@@ -22,11 +23,9 @@ import { createUserLoader } from "./utils/createUserLoader";
 const main = async () => {
   const conn = await createConnection({
     type: "postgres",
-    database: "testDB2",
-    username: "postgres",
-    password: "mrniceguy911",
+    url: process.env.DATABASE_URL,
     logging: true,
-    synchronize: true,
+    // synchronize: true,
     migrations: [path.join(__dirname, "./migrations/*")],
     entities: [Post, User, Upvote], //Upvote
   });
@@ -37,11 +36,10 @@ const main = async () => {
   const app = express();
 
   const RedisStore = connectRedis(session);
-  const redis = new Redis(); //process.env.REDIS_URL
-  // app.set("trust proxy", 1);
+  const redis = new Redis(process.env.REDIS_URL);
   app.use(
     cors({
-      origin: "http://localhost:3000", // process.env.COR_ORIGIN
+      origin: process.env.COR_ORIGIN,
       credentials: true,
     })
   );
@@ -57,10 +55,10 @@ const main = async () => {
         httpOnly: true,
         sameSite: "lax", //csrf protection
         secure: __prod__, // cookie only works in https
-        // domain: __prod__ ? ".codeponder.com" : undefined,
+        domain: __prod__ ? ".codeponder.com" : undefined,
       },
       saveUninitialized: false,
-      secret: "ipeeintheshower", //process.env.SESSION_SECRET,
+      secret: process.env.SESSION_SECRET,
       resave: false,
     })
   );
@@ -87,7 +85,7 @@ const main = async () => {
   // app.listen(paresInt(process.env.PORT), () => {
   //   console.log("server started on localhost:4000")
   // });
-  app.listen(4000, () => {
+  app.listen(parseInt(process.env.PORT), () => {
     console.log(`app listening on localhost:4000`);
   });
 };
